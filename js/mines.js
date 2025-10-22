@@ -1,6 +1,9 @@
+'use strict'
+
 function setMine(board) {
     var rowIdx = getRandomInt(0, board.length)
     var colIdx = getRandomInt(0, board.length)
+    
     if (board[rowIdx][colIdx].isMine) setMine(board)
     board[rowIdx][colIdx].isMine = true
 }
@@ -26,7 +29,6 @@ function minesAroundCount(board, rowIdx, colIdx) {
         for (var j = colIdx - 1; j <= colIdx + 1; j++) {
             if (i === rowIdx && j === colIdx) continue
             if (j < 0 || j >= board[0].length) continue
-
             const currCell = board[i][j]
             if (currCell.isMine) count++
         }
@@ -34,4 +36,17 @@ function minesAroundCount(board, rowIdx, colIdx) {
 
     return count
 }
+
+function revealMines(board) {
+    for (var i = 0; i < board.length; i++) {
+        for (var j = 0; j < board[i].length; j++) {
+            const currCell = board[i][j]
+            if (currCell.isMine) {
+                const elCurrCell = document.querySelector(`.cell-${i}-${j}`)
+                renderCell(elCurrCell, MINE)
+            }
+        }
+    }
+}
+
 

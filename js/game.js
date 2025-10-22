@@ -1,25 +1,37 @@
 'use strict'
+
 const MINE = '💣'
 const MARK = '🚩'
 const EMPTY = ' '
 
+const NORMAL = '😋'
+const LOSER = '😔'
+const WINNER = '🤩'
+
 var gBoard
+var gStartTime
+var gTimerInterval
 
 const gGame = {
     isOn: false,
     revealedCount: 0,
     markedCount: 0,
     secsPassed: 0,
+    life: 3,
 }
+
 const gLevel = {
     size: 4,
     mines: 2,
 }
 
 function onInit() {
-    gGame.isOn = true
     gBoard = buildBoard()
     renderBoard(gBoard)
+    setLife(gGame.life)
+    setSmiley(NORMAL)
+
+    document.querySelector('h2 span').innerText = gLevel.mines
 }
 
 function buildBoard() {
@@ -40,12 +52,11 @@ function buildBoard() {
 
     board[1][1].isMine = true
     board[1][2].isMine = true
-
     // for (var i = 0; i < gLevel.mines; i++) {
     //     setMine(board)
     // }
-
     setMinesNegsCount(board)
+
     console.log('board:', board)
     return board
 }
@@ -70,19 +81,37 @@ function renderBoard(board) {
     console.log('elBoard:', elBoard)
 }
 
+function renderCell(elCell, value) {
+    elCell.innerHTML = value
+    elCell.classList.toggle('clicked')
+}
+
 function onCellClicked(elCell, i, j) {
     const currCell = gBoard[i][j]
     var currValue = currCell.minesAround
 
-    if (currCell.isMarked) return
-    if (currValue === EMPTY)  expandReveal(gBoard, i, j)
+    if (gGame.markedCount === 0 && gGame.revealedCount === 0) {
+        gGame.isOn = true
+        startTimer()
+    }
+
+    if (!gGame.isOn) return
+    if (currCell.isMarked || currCell.isRevealed) return
+
+    if (currValue === EMPTY && !currCell.isMine) {
+        expandReveal(gBoard, i, j)
+    }
 
     gGame.revealedCount++
     currCell.isRevealed = true
 
-    if (currCell.isMine) elCell.innerText = MINE
-    else elCell.innerText = currCell.minesAround
-    elCell.style.backgroundColor = 'var(--main-color)'
+    if (currCell.isMine) {
+        gGame.isOn = false
+        revealMines(gBoard)
+        setSmiley(LOSER)
+    } else {
+        renderCell(elCell, currValue)
+    }
 
     if (checkGameOver()) gGame.isOn = false
     console.log(checkGameOver())
@@ -92,18 +121,26 @@ function onCellMarked(elCell, i, j) {
     document.addEventListener('contextmenu', event => { event.preventDefault() })
     const currCell = gBoard[i][j]
 
-    if (currCell.isRevealed) return
+    if (gGame.markedCount === 0 && gGame.revealedCount === 0) {
+        gGame.isOn = true
+    }
 
-    gGame.markedCount++
-    currCell.isMarked = true
+    if (!gGame.isOn) return
+    if (currCell.isRevealed) {
+        return
+    } else if (currCell.isMarked) {
+        currCell.isMarked = false
+        updateMarkedCount(-1)
 
-    elCell.innerText = MARK
+        renderCell(elCell, EMPTY)
+    } else {
+        currCell.isMarked = true
+        updateMarkedCount(1)
+
+        renderCell(elCell, MARK)
+    }
 
     if (checkGameOver()) gGame.isOn = false
-}
-
-function checkGameOver() {
-    return gGame.revealedCount + gGame.markedCount == gLevel.size ** 2
 }
 
 function expandReveal(board, rowIdx, colIdx) {
@@ -118,13 +155,41 @@ function expandReveal(board, rowIdx, colIdx) {
             const currCell = board[i][j]
             const elCurrCell = document.querySelector(`.cell-${i}-${j}`)
 
-            if(!currCell.isRevealed && !currCell.isMarked){
+            if (!currCell.isRevealed && !currCell.isMarked) {
                 gGame.revealedCount++
                 currCell.isRevealed = true
-    
-                elCurrCell.innerText = currCell.minesAround
-                elCurrCell.style.backgroundColor = 'var(--main-color)'
+
+                renderCell(elCurrCell, currCell.minesAround)
             }
         }
     }
 }
+
+function checkGameOver() {
+    return gGame.revealedCount + gGame.markedCount == gLevel.size ** 2
+}
+
+function restart() {
+    gBoard = buildBoard()
+    renderBoard(gBoard)
+
+    gGame.isOn = false
+    gGame.markedCount = 0
+    gGame.revealedCount = 0
+    gGame.secsPassed = 0
+    
+    clearInterval(gTimerInterval)
+    document.querySelector('h2 span').innerText = gLevel.mines
+    document.querySelector('.timer').innerText = '00'
+    setSmiley(NORMAL)
+}
+
+function setLevel(elBtn) {
+    gLevel.size = elBtn.getAttribute('data-size')
+    gLevel.mines = elBtn.getAttribute('data-mines')
+    restart()
+}
+
+
+
+
