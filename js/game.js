@@ -14,10 +14,12 @@ var gTimerInterval
 
 const gGame = {
     isOn: false,
+    isHintOn: false,
     revealedCount: 0,
     markedCount: 0,
     secsPassed: 0,
     life: 3,
+    hint: 3,
 }
 
 const gLevel = {
@@ -28,10 +30,11 @@ const gLevel = {
 function onInit() {
     gBoard = buildBoard()
     renderBoard(gBoard)
+
+    updateMarkedCount(0)
     setLife(gGame.life)
     setSmiley(NORMAL)
-
-    document.querySelector('h2 span').innerText = gLevel.mines
+    setBestTime()
 }
 
 function buildBoard() {
@@ -49,15 +52,6 @@ function buildBoard() {
             board[i][j] = cell
         }
     }
-
-    board[1][1].isMine = true
-    board[1][2].isMine = true
-    // for (var i = 0; i < gLevel.mines; i++) {
-    //     setMine(board)
-    // }
-    setMinesNegsCount(board)
-
-    console.log('board:', board)
     return board
 }
 
@@ -76,9 +70,7 @@ function renderBoard(board) {
         }
         strHtml += '</tr>\n'
     }
-
     elBoard.innerHTML = strHtml
-    console.log('elBoard:', elBoard)
 }
 
 function renderCell(elCell, value) {
@@ -89,8 +81,13 @@ function renderCell(elCell, value) {
 function onCellClicked(elCell, i, j) {
     const currCell = gBoard[i][j]
     var currValue = currCell.minesAround
+    if (currCell.isMine) currValue = MINE
 
     if (gGame.markedCount === 0 && gGame.revealedCount === 0) {
+        setMines(gBoard, i, j)
+        setMinesNegsCount(gBoard)
+        currValue = currCell.minesAround
+        elCell.innerHTML = currValue
         gGame.isOn = true
         startTimer()
     }
@@ -102,19 +99,21 @@ function onCellClicked(elCell, i, j) {
         expandReveal(gBoard, i, j)
     }
 
-    gGame.revealedCount++
-    currCell.isRevealed = true
-
     if (currCell.isMine) {
-        gGame.isOn = false
-        revealMines(gBoard)
-        setSmiley(LOSER)
+        lostLife(elCell)
+        if (gGame.life === 0) return gameLost()
     } else {
+        gGame.revealedCount++
+        currCell.isRevealed = true
+
         renderCell(elCell, currValue)
     }
 
-    if (checkGameOver()) gGame.isOn = false
-    console.log(checkGameOver())
+    if (checkGameOver()) {
+        gGame.isOn = false
+        setSmiley(WINNER)
+        getBestTime()
+    }
 }
 
 function onCellMarked(elCell, i, j) {
@@ -123,24 +122,27 @@ function onCellMarked(elCell, i, j) {
 
     if (gGame.markedCount === 0 && gGame.revealedCount === 0) {
         gGame.isOn = true
+        startTimer()
     }
 
-    if (!gGame.isOn) return
-    if (currCell.isRevealed) {
-        return
-    } else if (currCell.isMarked) {
-        currCell.isMarked = false
+    if (currCell.isRevealed) return
+    else if (currCell.isMarked) {
         updateMarkedCount(-1)
+        currCell.isMarked = false
 
         renderCell(elCell, EMPTY)
     } else {
-        currCell.isMarked = true
         updateMarkedCount(1)
+        currCell.isMarked = true
 
         renderCell(elCell, MARK)
     }
 
-    if (checkGameOver()) gGame.isOn = false
+    if (checkGameOver()) {
+        gGame.isOn = false
+        setSmiley(WINNER)
+        getBestTime()
+    }
 }
 
 function expandReveal(board, rowIdx, colIdx) {
@@ -155,7 +157,7 @@ function expandReveal(board, rowIdx, colIdx) {
             const currCell = board[i][j]
             const elCurrCell = document.querySelector(`.cell-${i}-${j}`)
 
-            if (!currCell.isRevealed && !currCell.isMarked) {
+            if (!currCell.isRevealed && !currCell.isMarked && !currCell.isMine) {
                 gGame.revealedCount++
                 currCell.isRevealed = true
 
@@ -165,8 +167,27 @@ function expandReveal(board, rowIdx, colIdx) {
     }
 }
 
+function lostLife(elCell) {
+    gGame.life--
+    setLife(gGame.life)
+    if (gGame.life === 0) return
+    renderCell(elCell, MINE)
+    setSmiley(LOSER)
+    setTimeout(() => {
+        setSmiley(NORMAL)
+        renderCell(elCell, EMPTY)
+    }, 500)
+}
+
+function gameLost() {
+    gGame.isOn = false
+    revealMines(gBoard)
+    setSmiley(LOSER)
+}
+
 function checkGameOver() {
-    return gGame.revealedCount + gGame.markedCount == gLevel.size ** 2
+    return (gGame.markedCount === gLevel.mines &&
+        gGame.revealedCount + gGame.markedCount === gLevel.size ** 2)
 }
 
 function restart() {
@@ -177,11 +198,14 @@ function restart() {
     gGame.markedCount = 0
     gGame.revealedCount = 0
     gGame.secsPassed = 0
-    
+    gGame.life = 3
+
     clearInterval(gTimerInterval)
-    document.querySelector('h2 span').innerText = gLevel.mines
     document.querySelector('.timer').innerText = '00'
+
     setSmiley(NORMAL)
+    setLife(gGame.life)
+    updateMarkedCount(0)
 }
 
 function setLevel(elBtn) {
@@ -190,6 +214,26 @@ function setLevel(elBtn) {
     restart()
 }
 
+function getBestTime() {
+    const str = `best-time-${gLevel.size}x${gLevel.size}`
+    const elBestTime = document.querySelector('.' + str + ' span')
+    const currTime = gGame.secsPassed
+    
+
+    if (!localStorage.getItem(str) || currTime < localStorage.getItem(str)) {
+        localStorage.setItem(str, currTime)
+        gLevel.bestTime = currTime
+        gLevel.bestTime = currTime
+        setBestTime()
+    }
+    elBestTime.innerText = localStorage.getItem(str)
+}
+
+function setBestTime() {
+    const str = `best-time-${gLevel.size}x${gLevel.size}`
+    const elBestTime = document.querySelector('.' + str + ' span')
+    elBestTime.innerText = localStorage.getItem(str) +' sec'
+}
 
 
 

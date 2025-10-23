@@ -15,6 +15,9 @@ body {
     font-family: monospace;
 }
 
+h1{
+    font-size: 2.5rem;
+}
 
 table {
     margin: 1.5rem auto;
@@ -59,7 +62,7 @@ button:hover {
 }
 
 .hud {
-    width: 25rem;
+    width: 30rem;
     margin: 1rem auto;
 
     background-color: var(--secondery-color);
@@ -90,4 +93,10 @@ button:hover {
 
 .smiley:hover {
     font-size: 2.2rem;
+}
+
+.hints *{
+    margin: 0.1rem;
+    border-radius: 5px;
+    cursor: pointer;
 }

@@ -1,11 +1,17 @@
 'use strict'
 
-function setMine(board) {
-    var rowIdx = getRandomInt(0, board.length)
-    var colIdx = getRandomInt(0, board.length)
-    
-    if (board[rowIdx][colIdx].isMine) setMine(board)
-    board[rowIdx][colIdx].isMine = true
+function setMines(board, i, j) {
+    var placedMines = 0
+
+    while (placedMines < gLevel.mines) {
+        const rowIdx = getRandomInt(0, board.length)
+        const colIdx = getRandomInt(0, board.length)
+
+        if (rowIdx === i && colIdx === j) continue
+        if (board[rowIdx][colIdx].isMine) continue
+        board[rowIdx][colIdx].isMine = true
+        placedMines++
+    }
 }
 
 function setMinesNegsCount(board) {
@@ -42,6 +48,9 @@ function revealMines(board) {
         for (var j = 0; j < board[i].length; j++) {
             const currCell = board[i][j]
             if (currCell.isMine) {
+                gGame.revealedCount++
+                currCell.isRevealed = true
+
                 const elCurrCell = document.querySelector(`.cell-${i}-${j}`)
                 renderCell(elCurrCell, MINE)
             }

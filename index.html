@@ -19,16 +19,22 @@
         <tbody class="board"></tbody>
     </table>
 
+    
     <div class="btns">
         <button data-size="4" data-mines="2" onclick="setLevel(this)">Beginner</button>
         <button data-size="8" data-mines="14" onclick="setLevel(this)">Medium</button>
         <button data-size="12" data-mines="32" onclick="setLevel(this)">Expert</button>
     </div>
+    <div >
+        <h2 class="best-time-4x4">Best time 4x4: <span>--</span></h2>
+        <h2 class="best-time-6x6">Best time 6x6: <span>--</span></h2>
+        <h2 class="best-time-12x12">Best time 12x12: <span>--</span></h2>
+    </div>
 
     <script src="js/utils.js"></script>
     <script src="js/mines.js"></script>
-    <script src="js/game.js"></script>
     <script src="js/hud.js"></script>
+    <script src="js/game.js"></script>
 </body>
 
 </html>
