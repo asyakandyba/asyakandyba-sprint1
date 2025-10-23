@@ -2,6 +2,7 @@
 
 const LIFE = '♥️'
 const LOSTLIFE = '💔'
+const SAFECLICK = '🔑'
 
 
 function updateMarkedCount(diff) {
@@ -39,6 +40,43 @@ function setLife(lifeCount) {
     }
     for (var i = 0; i < 3 - lifeCount; i++) {
         elLife.innerText += LOSTLIFE
+    }
+}
+
+function setSafeClicks(safeClicksCount) {
+    var elSafeClicks = document.querySelector('.safe-clicks')
+    elSafeClicks.innerHTML = ''
+
+    for (var i = 0; i < safeClicksCount; i++) {
+        elSafeClicks.innerHTML += `<p onclick="useSafeClick(this)">${SAFECLICK}</p>`
+    }
+}
+
+function useSafeClick(elSafeClick) {
+    const safeCell = getRandSafeCell(gBoard)
+    const i = safeCell.i
+    const j = safeCell.j
+    const elCurrCell = document.querySelector(`.cell-${i}-${j}`)
+
+    gGame.safeClicks--
+    elSafeClick.innerHTML = ''
+    renderCell(elCurrCell, gBoard[i][j].minesAround)
+
+    setTimeout(() => {
+        renderCell(elCurrCell, EMPTY)
+    }, 1500);
+
+}
+
+function toggleDarkMode(elBtn) {
+    const elHtmlBody = document.querySelector('body')
+
+    if (elHtmlBody.getAttribute('data-theme') === 'dark') {
+        elHtmlBody.setAttribute('data-theme', 'light')
+        elBtn.innerText = 'Dark mode'
+    } else {
+        elHtmlBody.setAttribute('data-theme', 'dark')
+        elBtn.innerText = 'Light mode'
     }
 }
 

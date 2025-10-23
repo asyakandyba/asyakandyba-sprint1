@@ -12,20 +12,25 @@ var gBoard
 var gStartTime
 var gTimerInterval
 
-const gGame = {
+var gGame = {
     isOn: false,
-    isHintOn: false,
     revealedCount: 0,
     markedCount: 0,
     secsPassed: 0,
     life: 3,
-    hint: 3,
+    safeClicks: 3,
 }
 
 const gLevel = {
     size: 4,
     mines: 2,
 }
+
+const gLevels = [
+    { size: 4 },
+    { size: 8 },
+    { size: 12 },
+]
 
 function onInit() {
     gBoard = buildBoard()
@@ -34,6 +39,7 @@ function onInit() {
     updateMarkedCount(0)
     setLife(gGame.life)
     setSmiley(NORMAL)
+    setSafeClicks(gGame.safeClicks)
     setBestTime()
 }
 
@@ -61,6 +67,7 @@ function renderBoard(board) {
 
     for (var i = 0; i < board.length; i++) {
         strHtml += '</tr>\n'
+
         for (var j = 0; j < board[i].length; j++) {
 
             strHtml += `<td class="cell cell-${i}-${j}"
@@ -86,8 +93,6 @@ function onCellClicked(elCell, i, j) {
     if (gGame.markedCount === 0 && gGame.revealedCount === 0) {
         setMines(gBoard, i, j)
         setMinesNegsCount(gBoard)
-        currValue = currCell.minesAround
-        elCell.innerHTML = currValue
         gGame.isOn = true
         startTimer()
     }
@@ -97,9 +102,7 @@ function onCellClicked(elCell, i, j) {
 
     if (currValue === EMPTY && !currCell.isMine) {
         expandReveal(gBoard, i, j)
-    }
-
-    if (currCell.isMine) {
+    } else if (currCell.isMine) {
         lostLife(elCell)
         if (gGame.life === 0) return gameLost()
     } else {
@@ -146,12 +149,10 @@ function onCellMarked(elCell, i, j) {
 }
 
 function expandReveal(board, rowIdx, colIdx) {
-
     for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
         if (i < 0 || i >= board.length) continue
 
         for (var j = colIdx - 1; j <= colIdx + 1; j++) {
-            if (i === rowIdx && j === colIdx) continue
             if (j < 0 || j >= board[0].length) continue
 
             const currCell = board[i][j]
@@ -162,6 +163,7 @@ function expandReveal(board, rowIdx, colIdx) {
                 currCell.isRevealed = true
 
                 renderCell(elCurrCell, currCell.minesAround)
+                if (currCell.minesAround === EMPTY) expandReveal(board, i, j)
             }
         }
     }
@@ -170,9 +172,12 @@ function expandReveal(board, rowIdx, colIdx) {
 function lostLife(elCell) {
     gGame.life--
     setLife(gGame.life)
+
     if (gGame.life === 0) return
+
     renderCell(elCell, MINE)
     setSmiley(LOSER)
+
     setTimeout(() => {
         setSmiley(NORMAL)
         renderCell(elCell, EMPTY)
@@ -194,23 +199,27 @@ function restart() {
     gBoard = buildBoard()
     renderBoard(gBoard)
 
-    gGame.isOn = false
-    gGame.markedCount = 0
-    gGame.revealedCount = 0
-    gGame.secsPassed = 0
-    gGame.life = 3
+    gGame = {
+        isOn: false,
+        revealedCount: 0,
+        markedCount: 0,
+        secsPassed: 0,
+        life: 3,
+        safeClicks: 3,
+    }
 
     clearInterval(gTimerInterval)
     document.querySelector('.timer').innerText = '00'
 
     setSmiley(NORMAL)
-    setLife(gGame.life)
     updateMarkedCount(0)
+    setLife(gGame.life)
+    setSafeClicks(gGame.safeClicks)
 }
 
 function setLevel(elBtn) {
-    gLevel.size = elBtn.getAttribute('data-size')
-    gLevel.mines = elBtn.getAttribute('data-mines')
+    gLevel.size = +elBtn.getAttribute('data-size')
+    gLevel.mines = +elBtn.getAttribute('data-mines')
     restart()
 }
 
@@ -218,7 +227,6 @@ function getBestTime() {
     const str = `best-time-${gLevel.size}x${gLevel.size}`
     const elBestTime = document.querySelector('.' + str + ' span')
     const currTime = gGame.secsPassed
-    
 
     if (!localStorage.getItem(str) || currTime < localStorage.getItem(str)) {
         localStorage.setItem(str, currTime)
@@ -230,9 +238,13 @@ function getBestTime() {
 }
 
 function setBestTime() {
-    const str = `best-time-${gLevel.size}x${gLevel.size}`
-    const elBestTime = document.querySelector('.' + str + ' span')
-    elBestTime.innerText = localStorage.getItem(str) +' sec'
+    for (var i = 0; i < gLevels.length; i++) {
+        const size = gLevels[i].size
+        const str = `best-time-${size}x${size}`
+
+        const elBestTime = document.querySelector('.' + str + ' span')
+        elBestTime.innerText = localStorage.getItem(str)
+    }
 }
 
 

@@ -3,19 +3,28 @@
 }
 
 :root {
-    --background-color: #ebddc0;
+    --background-color: rgb(250, 240, 220);
     --main-color: rgb(255, 235, 198);
-    --secondery-color: rgb(242, 210, 151);
+    --secondery-color: rgb(242, 210, 151); 
+    --text-color: black;
+
+    [data-theme="dark"] {
+        --background-color: #1a1a1a;
+        --main-color: rgb(186, 183, 183);
+        --secondery-color: rgb(108, 106, 106);
+        --text-color: white;
+    }
 }
 
 body {
     background-color: var(--background-color);
 
+    color: var(--text-color);
     text-align: center;
     font-family: monospace;
 }
 
-h1{
+h1 {
     font-size: 2.5rem;
 }
 
@@ -44,7 +53,7 @@ table {
     background-color: var(--main-color);
 }
 
-.btns button {
+button {
     padding: 0.5rem;
     margin: 0.5rem;
 
@@ -77,13 +86,13 @@ button:hover {
     font-size: 1.3rem;
 }
 
-.smiley{
+.smiley {
     width: 4rem;
     height: 3.5rem;
     margin: auto;
     background-color: var(--secondery-color);
 
-    border:  solid black 2.5px;
+    border: solid black 2.5px;
     border-radius: 5px;
 
     font-size: 2rem;
@@ -95,8 +104,11 @@ button:hover {
     font-size: 2.2rem;
 }
 
-.hints *{
-    margin: 0.1rem;
-    border-radius: 5px;
+.safe-clicks * {
+    margin: 0.2rem;
     cursor: pointer;
+}
+
+.dark-mode {
+    float:inline-start;
 }

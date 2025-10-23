@@ -7,11 +7,13 @@
 
 <body onload="onInit()">
     <h1>Mine Sweeper!</h1>
+    <button class="dark-mode" onclick="toggleDarkMode(this)">Dark mode</button>
 
     <div class="hud">
         <h2>🚩: <span></span></h2>
         <h2 class="timer">00</h2>
         <h2 class="life"></h2>
+        <h2 class="safe-clicks"></h2>
     </div>
     <h2 class="smiley" onclick="restart()"></h2>
 
@@ -19,16 +21,15 @@
         <tbody class="board"></tbody>
     </table>
 
-    
-    <div class="btns">
+    <div>
         <button data-size="4" data-mines="2" onclick="setLevel(this)">Beginner</button>
         <button data-size="8" data-mines="14" onclick="setLevel(this)">Medium</button>
         <button data-size="12" data-mines="32" onclick="setLevel(this)">Expert</button>
     </div>
-    <div >
-        <h2 class="best-time-4x4">Best time 4x4: <span>--</span></h2>
-        <h2 class="best-time-6x6">Best time 6x6: <span>--</span></h2>
-        <h2 class="best-time-12x12">Best time 12x12: <span>--</span></h2>
+    <div>
+        <h2 class="best-time-4x4">Best time 4x4: <span></span></h2>
+        <h2 class="best-time-8x8">Best time 8x8: <span></span></h2>
+        <h2 class="best-time-12x12">Best time 12x12: <span></span></h2>
     </div>
 
     <script src="js/utils.js"></script>

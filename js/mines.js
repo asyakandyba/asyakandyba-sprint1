@@ -18,8 +18,8 @@ function setMinesNegsCount(board) {
     for (var i = 0; i < board.length; i++) {
         for (var j = 0; j < board[i].length; j++) {
             const currCell = board[i][j]
-
             const count = minesAroundCount(board, i, j)
+
             if (count > 0) currCell.minesAround = count
             else currCell.minesAround = EMPTY
         }
@@ -31,7 +31,6 @@ function minesAroundCount(board, rowIdx, colIdx) {
 
     for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
         if (i < 0 || i >= board.length) continue
-
         for (var j = colIdx - 1; j <= colIdx + 1; j++) {
             if (i === rowIdx && j === colIdx) continue
             if (j < 0 || j >= board[0].length) continue
@@ -39,7 +38,6 @@ function minesAroundCount(board, rowIdx, colIdx) {
             if (currCell.isMine) count++
         }
     }
-
     return count
 }
 
