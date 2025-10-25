@@ -11,15 +11,20 @@
 
     <div class="hud">
         <h2>🚩: <span></span></h2>
-        <h2 class="timer">00</h2>
+        <h2 class="timer">⏳:<span>00</span></h2>
         <h2 class="life"></h2>
-        <h2 class="safe-clicks"></h2>
+        <div class="hints"></div>
+        <div class="safe-clicks"></div>
     </div>
     <h2 class="smiley" onclick="restart()"></h2>
 
     <table class="board-container">
         <tbody class="board"></tbody>
     </table>
+    <div>
+        <button onclick="exterminateThreeMines()">Exterminator☢️</button>
+        <button onclick="undo()">Undo↩️</button>
+    </div>
 
     <div>
         <button data-size="4" data-mines="2" onclick="setLevel(this)">Beginner</button>

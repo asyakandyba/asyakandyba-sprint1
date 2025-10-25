@@ -20,14 +20,6 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled)
 }
 
-function copyMat(mat) {
-    var newMat = []
-    for (var i = 0; i < mat.length; i++) {
-        newMat.push([...mat[i]])
-    }
-    return newMat
-}
-
 //change acording to game!
 function getRandSafeCell(board) {
     var emptyCells = []

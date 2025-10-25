@@ -71,7 +71,7 @@ button:hover {
 }
 
 .hud {
-    width: 30rem;
+    width: 45rem;
     margin: 1rem auto;
 
     background-color: var(--secondery-color);
@@ -104,6 +104,16 @@ button:hover {
     font-size: 2.2rem;
 }
 
+.hints * {
+    margin: 0.2rem;
+    cursor: pointer;
+}
+
+.used-hint {
+    border: solid black 2px;
+    border-radius: 5px;
+}
+
 .safe-clicks * {
     margin: 0.2rem;
     cursor: pointer;
@@ -112,3 +122,9 @@ button:hover {
 .dark-mode {
     float:inline-start;
 }
+
+.hud div{
+    width: 7rem;
+    margin: 0.5rem;
+}
+

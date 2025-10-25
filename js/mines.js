@@ -56,4 +56,36 @@ function revealMines(board) {
     }
 }
 
+function exterminateThreeMines() {
+    if(!findRandMine(gBoard)) return
+    for (var i = 0; i < 3; i++) {
+        const randMine = findRandMine(gBoard)
+        if (!randMine) continue
+        randMine.isMine = false
+    }
+    setMinesNegsCount(gBoard)
+    gLevel.mines -=3
+    var remain = gLevel.mines - gGame.markedCount
+    document.querySelector('span').innerText = remain
+    renderBoard(gBoard)
+}
+
+function findRandMine(board) {
+    var mines = []
+
+    for (var i = 0; i < board.length; i++) {
+        for (var j = 0; j < board[i].length; j++) {
+            const currCell = board[i][j]
+            if (currCell.isRevealed) continue
+            if (currCell.isMine) {
+                mines.push(currCell)
+            }
+        }
+    }
+    if (!mines.length) return null
+
+    const randIdx = getRandomInt(0, mines.length)
+    return mines[randIdx]
+}
+
 

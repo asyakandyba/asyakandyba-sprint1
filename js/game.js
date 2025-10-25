@@ -1,5 +1,6 @@
 'use strict'
 
+
 const MINE = '💣'
 const MARK = '🚩'
 const EMPTY = ' '
@@ -11,34 +12,40 @@ const WINNER = '🤩'
 var gBoard
 var gStartTime
 var gTimerInterval
+var gBoardPrev
+var gGamePrev
 
 var gGame = {
     isOn: false,
+    isHintOn: false,
     revealedCount: 0,
     markedCount: 0,
     secsPassed: 0,
     life: 3,
+    hints: 3,
     safeClicks: 3,
 }
 
-const gLevel = {
+var gLevel = {
     size: 4,
     mines: 2,
 }
 
 const gLevels = [
-    { size: 4 },
-    { size: 8 },
-    { size: 12 },
+    { size: 4, mines: 2 },
+    { size: 8, mines: 14 },
+    { size: 12, mines: 32 },
 ]
 
 function onInit() {
     gBoard = buildBoard()
     renderBoard(gBoard)
 
-    updateMarkedCount(0)
+
+    setMarks(gLevels)
     setLife(gGame.life)
     setSmiley(NORMAL)
+    setHints(gGame.hints)
     setSafeClicks(gGame.safeClicks)
     setBestTime()
 }
@@ -70,11 +77,15 @@ function renderBoard(board) {
 
         for (var j = 0; j < board[i].length; j++) {
 
-            strHtml += `<td class="cell cell-${i}-${j}"
+            var classStr = board[i][j].isRevealed ? `class="cell cell-${i}-${j} clicked"` : `class="cell cell-${i}-${j}"`
+            var currValue = board[i][j].isRevealed ? getValue(board, i, j) : ''
+
+            strHtml += `<td ${classStr}
              onclick="onCellClicked(this, ${i}, ${j})"
              oncontextmenu="onCellMarked(this, ${i}, ${j})">
-             </td>`
+             ${currValue}</td>`
         }
+
         strHtml += '</tr>\n'
     }
     elBoard.innerHTML = strHtml
@@ -85,10 +96,16 @@ function renderCell(elCell, value) {
     elCell.classList.toggle('clicked')
 }
 
-function onCellClicked(elCell, i, j) {
-    const currCell = gBoard[i][j]
+function getValue(board, i, j) {
+    const currCell = board[i][j]
     var currValue = currCell.minesAround
     if (currCell.isMine) currValue = MINE
+    return currValue
+}
+
+function onCellClicked(elCell, i, j) {
+    const currCell = gBoard[i][j]
+    var currValue = getValue(gBoard, i, j)
 
     if (gGame.markedCount === 0 && gGame.revealedCount === 0) {
         setMines(gBoard, i, j)
@@ -97,8 +114,13 @@ function onCellClicked(elCell, i, j) {
         startTimer()
     }
 
+    if (gGame.isHintOn) return showHint(gBoard, i, j)
+
     if (!gGame.isOn) return
     if (currCell.isMarked || currCell.isRevealed) return
+
+    gBoardPrev = structuredClone(gBoard)
+    gGamePrev = {...gGame}
 
     if (currValue === EMPTY && !currCell.isMine) {
         expandReveal(gBoard, i, j)
@@ -156,13 +178,14 @@ function expandReveal(board, rowIdx, colIdx) {
             if (j < 0 || j >= board[0].length) continue
 
             const currCell = board[i][j]
+            const currValue = getValue(gBoard, i, j)
             const elCurrCell = document.querySelector(`.cell-${i}-${j}`)
 
             if (!currCell.isRevealed && !currCell.isMarked && !currCell.isMine) {
                 gGame.revealedCount++
                 currCell.isRevealed = true
 
-                renderCell(elCurrCell, currCell.minesAround)
+                renderCell(elCurrCell, currValue)
                 if (currCell.minesAround === EMPTY) expandReveal(board, i, j)
             }
         }
@@ -201,20 +224,23 @@ function restart() {
 
     gGame = {
         isOn: false,
+        isHintOn: false,
         revealedCount: 0,
         markedCount: 0,
         secsPassed: 0,
         life: 3,
+        hints: 3,
         safeClicks: 3,
     }
 
     clearInterval(gTimerInterval)
-    document.querySelector('.timer').innerText = '00'
+    document.querySelector('.timer span').innerText = '00'
 
     setSmiley(NORMAL)
-    updateMarkedCount(0)
     setLife(gGame.life)
+    setHints(gGame.hints)
     setSafeClicks(gGame.safeClicks)
+    setMarks(gLevels)
 }
 
 function setLevel(elBtn) {
@@ -246,6 +272,17 @@ function setBestTime() {
         elBestTime.innerText = localStorage.getItem(str)
     }
 }
+
+function undo(){
+    if(!gBoardPrev && !gGamePrev) return
+    gBoard = gBoardPrev
+    gGame = gGamePrev
+    renderBoard(gBoard)
+    setLife(gGame.life)
+    setSmiley(NORMAL)
+}
+
+
 
 
 
